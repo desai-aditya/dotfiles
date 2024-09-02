@@ -111,3 +111,6 @@ eval "$(zoxide init zsh --cmd cd)"
 # Use fzf
 source <(fzf --zsh)
 
+# Add fzf rg based search
+alias rg="search.sh"
+export PATH=$PATH:~/scripts
