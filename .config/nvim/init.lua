@@ -512,6 +512,7 @@ require('lazy').setup({
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
           map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('<leader>]', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
           map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -964,3 +965,4 @@ require('lazy').setup({
 vim.api.nvim_set_keymap('i', 'jk', '<esc>', { noremap = true })
 vim.api.nvim_set_keymap('n', ';', ':', { noremap = true })
 vim.api.nvim_set_keymap('n', ':', ';', { noremap = true })
+vim.api.nvim_set_keymap('n', '<leader>t', '<C-t>', { noremap = true })
