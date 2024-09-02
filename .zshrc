@@ -103,3 +103,11 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias vim="nvim"
+
+# Add path for zoxide
+export PATH=$PATH:~/.local/bin
+eval "$(zoxide init zsh --cmd cd)"
+
+# Use fzf
+source <(fzf --zsh)
+
