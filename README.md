@@ -27,3 +27,8 @@ brew install bat
 Then install zoxide from https://github.com/ajeetdsouza/zoxide?tab=readme-ov-file#installation
 
 Install mac os solarized dark theme from https://github.com/newelldev/macos-terminal-solarized
+
+Then install dot to view crate graphs
+
+brew install graphviz --with-app
+

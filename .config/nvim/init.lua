@@ -337,6 +337,11 @@ require('lazy').setup({
     -- this is equivalent to setup({}) function
   },
 
+  'simrat39/rust-tools.nvim',
+
+  'mfussenegger/nvim-dap',
+  { 'rcarriga/nvim-dap-ui', dependencies = { 'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio' } },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -683,15 +688,15 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        rust_analyzer = {
-          settings = {
-            ['rust-analyzer'] = {
-              checkOnSave = {
-                command = 'clippy',
-              },
-            },
-          },
-        },
+        -- rust_analyzer = {
+        --   settings = {
+        --     ['rust-analyzer'] = {
+        --       checkOnSave = {
+        --         command = 'clippy',
+        --       },
+        --     },
+        --   },
+        --  },
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -1055,3 +1060,48 @@ local telescope_builtin = require 'telescope.builtin'
 vim.keymap.set('n', '<leader>ff', telescope_builtin.find_files, {})
 vim.keymap.set('n', '<leader>fg', telescope_builtin.live_grep, {})
 vim.keymap.set('n', '<leader>fh', telescope_builtin.help_tags, {})
+
+require('dapui').setup()
+
+local dap, dapui = require 'dap', require 'dapui'
+dap.listeners.before.attach.dapui_config = function()
+  dapui.open()
+end
+dap.listeners.before.launch.dapui_config = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated.dapui_config = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited.dapui_config = function()
+  dapui.close()
+end
+
+local rt = require 'rust-tools'
+local mason_registry = require 'mason-registry'
+
+local codelldb = mason_registry.get_package 'codelldb'
+local extension_path = codelldb:get_install_path() .. '/extension/'
+local codelldb_path = extension_path .. 'adapter/codelldb'
+local liblldb_path = extension_path .. 'lldb/lib/liblldb.dylib'
+
+rt.setup {
+  dap = {
+    adapter = require('rust-tools.dap').get_codelldb_adapter(codelldb_path, liblldb_path),
+  },
+  server = {
+    capabilities = require('cmp_nvim_lsp').default_capabilities(),
+    on_attach = function(_, bufnr)
+      vim.keymap.set('n', '<Leader>k', rt.hover_actions.hover_actions, { buffer = bufnr })
+      vim.keymap.set('n', '<Leader>a', rt.code_action_group.code_action_group, { buffer = bufnr })
+    end,
+  },
+  tools = {
+    hover_actions = {
+      auto_focus = true,
+    },
+  },
+}
+vim.keymap.set('n', '<Leader>dt', ':DapToggleBreakpoint<CR>')
+vim.keymap.set('n', '<Leader>dx', ':DapTerminate<CR>')
+vim.keymap.set('n', '<Leader>do', ':DapStepOver<CR>')
