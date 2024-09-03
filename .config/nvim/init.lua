@@ -228,6 +228,12 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'VonHeikemen/lsp-zero.nvim',
+
+  {
+    'nvim-telescope/telescope-file-browser.nvim',
+    dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim' },
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -376,6 +382,7 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      local fb_actions = require 'telescope._extensions.file_browser.actions'
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
@@ -389,6 +396,67 @@ require('lazy').setup({
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
+          },
+          file_browser = {
+            path = vim.loop.cwd(),
+            cwd = vim.loop.cwd(),
+            cwd_to_path = false,
+            grouped = false,
+            files = true,
+            add_dirs = true,
+            depth = 1,
+            auto_depth = false,
+            select_buffer = false,
+            hidden = { file_browser = false, folder_browser = false },
+            respect_gitignore = vim.fn.executable 'fd' == 1,
+            no_ignore = false,
+            follow_symlinks = false,
+            browse_files = require('telescope._extensions.file_browser.finders').browse_files,
+            browse_folders = require('telescope._extensions.file_browser.finders').browse_folders,
+            hide_parent_dir = false,
+            collapse_dirs = false,
+            prompt_path = false,
+            quiet = false,
+            dir_icon = '',
+            dir_icon_hl = 'Default',
+            display_stat = { date = true, size = true, mode = true },
+            hijack_netrw = false,
+            use_fd = true,
+            git_status = true,
+            mappings = {
+              ['i'] = {
+                ['<A-c>'] = fb_actions.create,
+                ['<S-CR>'] = fb_actions.create_from_prompt,
+                ['<A-r>'] = fb_actions.rename,
+                ['<A-m>'] = fb_actions.move,
+                ['<A-y>'] = fb_actions.copy,
+                ['<A-d>'] = fb_actions.remove,
+                ['<C-o>'] = fb_actions.open,
+                ['<C-g>'] = fb_actions.goto_parent_dir,
+                ['<C-e>'] = fb_actions.goto_home_dir,
+                ['<C-w>'] = fb_actions.goto_cwd,
+                ['<C-t>'] = fb_actions.change_cwd,
+                ['<C-f>'] = fb_actions.toggle_browser,
+                ['<C-h>'] = fb_actions.toggle_hidden,
+                ['<C-s>'] = fb_actions.toggle_all,
+                ['<bs>'] = fb_actions.backspace,
+              },
+              ['n'] = {
+                ['c'] = fb_actions.create,
+                ['r'] = fb_actions.rename,
+                ['m'] = fb_actions.move,
+                ['y'] = fb_actions.copy,
+                ['d'] = fb_actions.remove,
+                ['o'] = fb_actions.open,
+                ['g'] = fb_actions.goto_parent_dir,
+                ['e'] = fb_actions.goto_home_dir,
+                ['w'] = fb_actions.goto_cwd,
+                ['t'] = fb_actions.change_cwd,
+                ['f'] = fb_actions.toggle_browser,
+                ['h'] = fb_actions.toggle_hidden,
+                ['s'] = fb_actions.toggle_all,
+              },
+            },
           },
         },
       }
@@ -755,6 +823,7 @@ require('lazy').setup({
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
+      local cmp_action = require('lsp-zero').cmp_action()
       luasnip.config.setup {}
 
       cmp.setup {
@@ -763,6 +832,8 @@ require('lazy').setup({
             luasnip.lsp_expand(args.body)
           end,
         },
+        preselect = 'item',
+
         completion = { completeopt = 'menu,menuone,noinsert' },
 
         -- For an understanding of why these mappings were
@@ -770,7 +841,10 @@ require('lazy').setup({
         --
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
-          -- Select the [n]ext item
+          ['<CR>'] = cmp.mapping.confirm { select = false },
+
+          ['<Tab>'] = cmp_action.luasnip_supertab(),
+          ['<S-Tab>'] = cmp_action.luasnip_shift_supertab(), -- Select the [n]ext item
           ['<C-n>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
           ['<C-p>'] = cmp.mapping.select_prev_item(),
@@ -966,3 +1040,6 @@ vim.api.nvim_set_keymap('i', 'jk', '<esc>', { noremap = true })
 vim.api.nvim_set_keymap('n', ';', ':', { noremap = true })
 vim.api.nvim_set_keymap('n', ':', ';', { noremap = true })
 vim.api.nvim_set_keymap('n', '<leader>t', '<C-t>', { noremap = true })
+vim.keymap.set('n', '<leader>fb', function()
+  require('telescope').extensions.file_browser.file_browser()
+end)
