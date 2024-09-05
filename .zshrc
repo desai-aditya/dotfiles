@@ -114,3 +114,4 @@ source <(fzf --zsh)
 # Add fzf rg based search
 alias rg="search.sh"
 export PATH=$PATH:~/scripts
+alias gits="git status"
